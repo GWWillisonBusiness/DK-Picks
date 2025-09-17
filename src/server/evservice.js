@@ -3,7 +3,7 @@ import axios from "axios";
 /**
  * ================= CONFIG =================
  */
-const ODDS_API_KEY = "5ea8798818043426e691a8d76f1a5175"; // The Odds API
+const ODDS_API_KEY = "d30c24900890b5ab4d183702ceda9a91"; // The Odds API
 const SPORTS_DATA_IO_KEY = "e1bc5f247c8748749754a25599a514ac"; // SportsDataIO
 
 const SPORT = "americanfootball_nfl";

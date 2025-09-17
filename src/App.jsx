@@ -16,7 +16,7 @@ function App() {
       const res = await axios.get(
         "https://dk-picks.onrender.com/api/ev-results"
       );
-      setGames(res.data.results || []);
+      setGames(res.data || []); // ✅ fixed
     } catch (err) {
       console.error("Fetch error:", err.message);
       setGames([]);
@@ -32,7 +32,7 @@ function App() {
       const res = await axios.get(
         "https://dk-picks.onrender.com/api/ev-refresh"
       );
-      setGames(res.data.results || []);
+      setGames(res.data || []); // ✅ fixed
     } catch (err) {
       console.error("Refresh error:", err.message);
       setGames([]);
