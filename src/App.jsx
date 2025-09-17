@@ -7,11 +7,44 @@ function App() {
   const [selectedWeek, setSelectedWeek] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [activeGame, setActiveGame] = useState(null);
+  const [loading, setLoading] = useState(false);
 
-  axios
-    .get("https://dk-picks.onrender.com/api/ev-results")
-    .then((res) => setGames(res.data || []))
-    .catch((err) => console.error(err));
+  // Fetch cached results
+  const fetchGames = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(
+        "https://dk-picks.onrender.com/api/ev-results"
+      );
+      setGames(res.data.results || []);
+    } catch (err) {
+      console.error("Fetch error:", err.message);
+      setGames([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Force refresh results
+  const refreshGames = async () => {
+    try {
+      setLoading(true);
+      const res = await axios.get(
+        "https://dk-picks.onrender.com/api/ev-refresh"
+      );
+      setGames(res.data.results || []);
+    } catch (err) {
+      console.error("Refresh error:", err.message);
+      setGames([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Initial fetch
+  useEffect(() => {
+    fetchGames();
+  }, []);
 
   useEffect(() => {
     const onKey = (e) => {
@@ -66,7 +99,6 @@ function App() {
     }
   };
 
-  // Team abbrevs for logo lookup (all lowercase)
   const teamToAbbr = {
     "Buffalo Bills": "buf",
     "Miami Dolphins": "mia",
@@ -115,7 +147,7 @@ function App() {
     <div className="min-h-screen text-white p-6">
       <h1 className="fancy-title text-5xl">NFL EV Results</h1>
 
-      <div className="flex justify-center mb-8">
+      <div className="flex justify-center mb-4 gap-4">
         <div className="week-container">
           <select
             value={selectedWeek}
@@ -130,6 +162,13 @@ function App() {
             ))}
           </select>
         </div>
+        <button
+          onClick={refreshGames}
+          className="refresh-btn bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded"
+          disabled={loading}
+        >
+          {loading ? "Refreshing..." : "Refresh"}
+        </button>
       </div>
 
       {/* Game Buttons */}
@@ -185,7 +224,7 @@ function App() {
             </button>
           );
         })}
-        {!grouped.length && (
+        {!grouped.length && !loading && (
           <p className="text-center text-gray-300 col-span-full">
             No games found for that week.
           </p>
@@ -242,9 +281,7 @@ function App() {
                       </div>
                       <div className="col-span-2">
                         <span className="muted">Spread:</span>{" "}
-                        <b className="teal">
-                          {g.predictedWinner} by {g.margin}
-                        </b>
+                        <b className="teal">{g.predictedWinner}</b>
                       </div>
                     </div>
                   </div>

@@ -3,7 +3,7 @@ import axios from "axios";
 /**
  * ================= CONFIG =================
  */
-const ODDS_API_KEY = "56a999bbdf8e92e993b212926b5d210a"; // The Odds API
+const ODDS_API_KEY = "5ea8798818043426e691a8d76f1a5175"; // The Odds API
 const SPORTS_DATA_IO_KEY = "e1bc5f247c8748749754a25599a514ac"; // SportsDataIO
 
 const SPORT = "americanfootball_nfl";
@@ -12,7 +12,7 @@ const MARKETS = "h2h";
 const STAKE = 5;
 
 const CURRENT_SEASON = 2025;
-const BASE_HOME_EDGE = 0.04; // bumped slightly
+const BASE_HOME_EDGE = 0.04;
 
 // -------- League-average fallbacks --------
 const LG_AVG_PFPG = 22.5;
@@ -63,6 +63,7 @@ const NAME_ALIASES = new Map([
   ["Washington", "Washington Commanders"],
   ["Washington Football Team", "Washington Commanders"],
 ]);
+
 function normalizeTeam(name) {
   if (!name) return name;
   const trimmed = String(name).trim();
@@ -78,6 +79,7 @@ function normalizeTeam(name) {
 const SEASON_START = new Date("2025-09-04T00:00:00Z");
 function getNFLWeek(date) {
   const kickoff = new Date(date);
+  if (isNaN(kickoff.getTime())) return 1;
   const diffDays = Math.floor((kickoff - SEASON_START) / (1000 * 60 * 60 * 24));
   return Math.max(1, Math.min(18, Math.floor(diffDays / 7) + 1));
 }
@@ -100,11 +102,13 @@ function americanToDecimal(odds) {
   return odds > 0 ? 1 + odds / 100 : 1 + 100 / Math.abs(odds);
 }
 function decimalToAmerican(dec) {
+  if (!dec || Number.isNaN(dec)) return 100; // fallback
   return dec >= 2.0
     ? Math.round((dec - 1) * 100)
     : Math.round(-100 / (dec - 1));
 }
 function impliedProbability(americanOdds) {
+  if (!americanOdds || Number.isNaN(americanOdds)) return 0.5;
   return americanOdds > 0
     ? 100 / (americanOdds + 100)
     : Math.abs(americanOdds) / (Math.abs(americanOdds) + 100);
@@ -119,14 +123,24 @@ function calcEV(americanOdds, winProb, stake) {
  * ================= SPORTS DATA IO =================
  */
 async function getStandings(seasonCode) {
-  const url = `https://api.sportsdata.io/v3/nfl/scores/json/Standings/${seasonCode}?key=${SPORTS_DATA_IO_KEY}`;
-  const { data } = await axios.get(url, { timeout: 20000 });
-  return data || [];
+  try {
+    const url = `https://api.sportsdata.io/v3/nfl/scores/json/Standings/${seasonCode}?key=${SPORTS_DATA_IO_KEY}`;
+    const { data } = await axios.get(url, { timeout: 20000 });
+    return data || [];
+  } catch (err) {
+    console.warn("⚠️ Standings fetch failed:", err.message);
+    return [];
+  }
 }
 async function getTeamSeasonStats(seasonCode) {
-  const url = `https://api.sportsdata.io/v3/nfl/stats/json/TeamSeasonStats/${seasonCode}?key=${SPORTS_DATA_IO_KEY}`;
-  const { data } = await axios.get(url, { timeout: 20000 });
-  return data || [];
+  try {
+    const url = `https://api.sportsdata.io/v3/nfl/stats/json/TeamSeasonStats/${seasonCode}?key=${SPORTS_DATA_IO_KEY}`;
+    const { data } = await axios.get(url, { timeout: 20000 });
+    return data || [];
+  } catch (err) {
+    console.warn("⚠️ Stats fetch failed:", err.message);
+    return [];
+  }
 }
 
 /**
@@ -151,6 +165,8 @@ function buildTeamDb(standings, stats) {
   const db = {};
   for (const row of standings || []) {
     const name = normalizeTeam(row.FullName || row.Team || row.Key);
+    if (!name) continue;
+
     const key = uc(row.Key || row.Team);
     const id = safe(row.TeamID, null);
 
@@ -268,7 +284,7 @@ function modelNFLProb({ team, opp, isHome, week }) {
   const logit = Math.log(p / (1 - p));
   let tempered = 1 / (1 + Math.exp(-T * logit));
 
-  // squash extreme edges
+  // squash extreme edges a bit
   tempered = 0.5 + 0.85 * (tempered - 0.5);
 
   return clamp01(tempered);
@@ -287,6 +303,14 @@ async function fetchOdds() {
  * ================= MAIN =================
  */
 export async function run() {
+
+  //Check Cache Before Anything Else
+  const now = Date.now();
+  if (cache.data && now - cache.timestamp < CACHE_DURATION) {
+    console.log("⚡ Serving EV results from cache");
+    return cache.data;
+  }
+
   const [st25, st24, ts25, ts24] = await Promise.all([
     getStandings(`${CURRENT_SEASON}REG`).catch(() => []),
     getStandings(`${CURRENT_SEASON - 1}REG`).catch(() => []),
@@ -340,7 +364,7 @@ export async function run() {
     const homeProb = clamp01(0.85 * baseHomeProb + 0.15 * vegasHomeProb);
     const awayProb = 1 - homeProb;
 
-    // Expected scores (same baseline for both sides)
+    // Expected scores
     const totalBaseline =
       (tHome.pfpg + tAway.pfpg + tHome.papg + tAway.papg) / 2;
     let spreadPts = (homeProb - 0.5) * 24;
@@ -379,5 +403,15 @@ export async function run() {
     }
   }
 
-  return out.sort((a, b) => b.ev - a.ev);
+  const results = out.sort((a, b) => b.ev - a.ev);
+
+  // ✅ Save to cache
+  cache = { data: results, timestamp: now };
+
+  return results;
+}
+// at the bottom of evservice.js
+export async function forceRun() {
+  cache = { data: null, timestamp: 0 }; // clear cache
+  return await run(); // will fetch fresh and reset timer
 }
