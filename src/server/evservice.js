@@ -284,7 +284,7 @@ function modelNFLProb({ team, opp, isHome, week }) {
   const logit = Math.log(p / (1 - p));
   let tempered = 1 / (1 + Math.exp(-T * logit));
 
-  // squash extreme edges a bit
+  // squash extremes
   tempered = 0.5 + 0.85 * (tempered - 0.5);
 
   return clamp01(tempered);
@@ -303,14 +303,6 @@ async function fetchOdds() {
  * ================= MAIN =================
  */
 export async function run() {
-
-  //Check Cache Before Anything Else
-  const now = Date.now();
-  if (cache.data && now - cache.timestamp < CACHE_DURATION) {
-    console.log("⚡ Serving EV results from cache");
-    return cache.data;
-  }
-
   const [st25, st24, ts25, ts24] = await Promise.all([
     getStandings(`${CURRENT_SEASON}REG`).catch(() => []),
     getStandings(`${CURRENT_SEASON - 1}REG`).catch(() => []),
@@ -403,15 +395,5 @@ export async function run() {
     }
   }
 
-  const results = out.sort((a, b) => b.ev - a.ev);
-
-  // ✅ Save to cache
-  cache = { data: results, timestamp: now };
-
-  return results;
-}
-// at the bottom of evservice.js
-export async function forceRun() {
-  cache = { data: null, timestamp: 0 }; // clear cache
-  return await run(); // will fetch fresh and reset timer
+  return out.sort((a, b) => b.ev - a.ev);
 }

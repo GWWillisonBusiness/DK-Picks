@@ -17,19 +17,15 @@ let cache = {
 };
 const TWO_HOURS = 1000 * 60 * 60 * 2; // 2 hours
 
-// --- API route with 2-hour throttling ---
+// --- API route with 2-hour caching ---
 app.get("/api/ev-results", async (_req, res) => {
   try {
     const now = Date.now();
 
-    // If cache is empty OR older than 2 hours → refresh
     if (!cache.data || now - cache.timestamp > TWO_HOURS) {
       console.log("🔄 Fetching fresh EV results...");
       const results = await run();
-      cache = {
-        data: results,
-        timestamp: now,
-      };
+      cache = { data: results, timestamp: now };
     } else {
       console.log("✅ Using cached EV results");
     }
@@ -41,15 +37,12 @@ app.get("/api/ev-results", async (_req, res) => {
   }
 });
 
-// --- Force refresh endpoint (ignores 2-hour rule) ---
+// --- Force refresh endpoint ---
 app.get("/api/ev-refresh", async (_req, res) => {
   try {
     console.log("⚡ Force refreshing EV results...");
     const results = await run();
-    cache = {
-      data: results,
-      timestamp: Date.now(),
-    };
+    cache = { data: results, timestamp: Date.now() };
     res.json(cache.data);
   } catch (err) {
     console.error("❌ Error in force refresh:", err);
