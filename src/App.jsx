@@ -8,12 +8,10 @@ function App() {
   const [modalOpen, setModalOpen] = useState(false);
   const [activeGame, setActiveGame] = useState(null);
 
-  useEffect(() => {
-    axios
-      .get("http://localhost:3001/api/ev-results")
-      .then((res) => setGames(res.data || []))
-      .catch((err) => console.error(err));
-  }, []);
+  axios
+    .get("https://dk-picks.onrender.com/api/ev-results")
+    .then((res) => setGames(res.data || []))
+    .catch((err) => console.error(err));
 
   useEffect(() => {
     const onKey = (e) => {
