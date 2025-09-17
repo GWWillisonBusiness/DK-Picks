@@ -1,0 +1,532 @@
+/* ===== Page background & base ===== */
+body {
+  background: linear-gradient(135deg, #6d28d9, #312e81, #000000);
+  background-size: 300% 300%;
+  animation: gradientShift 12s ease infinite;
+}
+
+@keyframes gradientShift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.no-scroll {
+  overflow: hidden;
+}
+
+/* ===== Dropdown styling ===== */
+.week-select {
+  border: 2px solid #a855f7;
+  background: #111;
+  color: #fff;
+  padding: 0.6rem 1rem;
+  border-radius: 0.75rem;
+  font-size: 1rem;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  box-shadow: 0 0 0 rgba(168, 85, 247, 0);
+}
+.week-select:hover,
+.week-select:focus {
+  border-color: #c084fc;
+  box-shadow: 0 0 15px #a855f7;
+  background: #1a1a1a;
+  outline: none;
+}
+.week-select option {
+  background: #111;
+  color: #fff;
+}
+
+/* ===== Game buttons (homepage) ===== */
+.game-btn {
+  width: 100%;
+  max-width: 500px; /* widened */
+  border: 2px solid rgba(168, 85, 247, 0.65);
+  color: #fff;
+  background: linear-gradient(120deg, #111827 0%, #0b0b0f 60%, #111827 100%);
+  border-radius: 1rem;
+  padding: 1rem 1rem; /* padding line to note */
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+  transition: transform 0.25s ease, box-shadow 0.25s ease,
+    border-color 0.25s ease;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.35);
+}
+
+.game-btn::before {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 1rem;
+  padding: 2px;
+  background: conic-gradient(
+    from 180deg at 50% 50%,
+    #a855f7,
+    #22d3ee,
+    #f59e0b,
+    #a855f7
+  );
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0.25;
+  transition: opacity 0.25s ease;
+}
+
+.game-btn:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 12px 36px rgba(168, 85, 247, 0.35);
+  border-color: rgba(168, 85, 247, 0.9);
+}
+.game-btn:hover::before {
+  opacity: 0.55;
+}
+
+.game-btn__title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #d8b4fe; /* purple-300 */
+  margin-bottom: 1rem;
+}
+
+.game-btn__meta {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #cbd5e1; /* slate-300 */
+  font-weight: 600;
+  flex-wrap: nowrap; /* keep in one line */
+  justify-content: center; /* spread evenly */
+}
+
+/* Chips */
+.chip {
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  background: rgba(59, 130, 246, 0.18); /* blue-ish */
+  border: 1px solid rgba(59, 130, 246, 0.45);
+  font-size: 0.75rem;
+  white-space: nowrap; /* prevent breaking */
+}
+.chip.alt {
+  background: rgba(236, 72, 153, 0.18);
+  border-color: rgba(236, 72, 153, 0.45);
+}
+.sep {
+  opacity: 0.6;
+}
+
+/* EV glow text (reuse in modal) */
+.ev-positive {
+  color: #4ade80; /* green-400 */
+  text-shadow: 0 0 10px rgba(74, 222, 128, 0.75);
+}
+.ev-negative {
+  color: #f87171; /* red-400 */
+  text-shadow: 0 0 10px rgba(248, 113, 113, 0.75);
+}
+
+/* ===== Modal ===== */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(8, 8, 13, 0.65);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.25rem;
+  z-index: 50;
+  animation: fadeIn 0.2s ease;
+}
+
+.modal {
+  width: 100%;
+  max-width: 820px;
+  background: #0b0b10;
+  border: 1px solid rgba(168, 85, 247, 0.55);
+  border-radius: 1rem;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.65);
+  overflow: hidden;
+  animation: popIn 0.2s ease;
+}
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 1.25rem;
+  background: #111827;
+  border-bottom: 1px solid rgba(168, 85, 247, 0.35);
+}
+
+.modal__title {
+  color: #d8b4fe;
+  font-weight: 800;
+  font-size: 1.125rem;
+}
+
+.modal__close {
+  background: transparent;
+  border: none;
+  color: #fff;
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+  transition: transform 0.15s ease, color 0.15s ease;
+}
+.modal__close:hover {
+  color: #c084fc;
+  transform: scale(1.1);
+}
+
+.modal__body {
+  padding: 1.25rem;
+  background: #0b0b10;
+}
+
+.modal__footer {
+  padding: 0.9rem 1.25rem;
+  background: #0f0f16;
+  border-top: 1px solid rgba(168, 85, 247, 0.35);
+  display: flex;
+  justify-content: flex-end;
+}
+
+.close-btn {
+  background: linear-gradient(135deg, #a855f7, #06b6d4);
+  border: none;
+  padding: 0.55rem 1rem;
+  border-radius: 0.6rem;
+  color: #fff;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 8px 24px rgba(168, 85, 247, 0.35);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+.close-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 28px rgba(168, 85, 247, 0.5);
+}
+
+/* Team cards inside modal */
+.team-card {
+  background: linear-gradient(120deg, #0f1016, #0b0b10 60%, #0f1016);
+  border: 1px solid #374151;
+  border-radius: 0.75rem;
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.team-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 0.5rem;
+}
+.team-card__team {
+  color: #34d399; /* green-400 */
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+.team-card__ev {
+  font-weight: 800;
+}
+
+.team-card__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem 1rem;
+}
+.team-card__grid .col-span-2 {
+  grid-column: span 2;
+}
+
+.muted {
+  color: #9ca3af;
+}
+.accent {
+  color: #fbbf24;
+} /* odds */
+.info {
+  color: #93c5fd;
+} /* our prob */
+.pink {
+  color: #f9a8d4;
+} /* dk prob */
+.indigo {
+  color: #a5b4fc;
+}
+.orange {
+  color: #fdba74;
+}
+.teal {
+  color: #5eead4;
+}
+
+/* Animations */
+@keyframes popIn {
+  from {
+    transform: translateY(6px) scale(0.98);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0) scale(1);
+    opacity: 1;
+  }
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* Game list grid -> list on mobile */
+.game-list {
+  display: grid;
+  gap: 1rem;
+  justify-items: center;
+}
+
+/* Desktop: 3 columns */
+@media (min-width: 768px) {
+  .game-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+}
+
+/* Mobile: single column full width */
+@media (max-width: 767px) {
+  .game-btn {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+/* Title with static gradient text + animated shadow */
+.fancy-title {
+  font-weight: 900;
+  text-align: center;
+  letter-spacing: 1px;
+  margin-bottom: 2rem;
+  font-size: 3rem;
+
+  background: linear-gradient(90deg, #a855f7, #22d3ee, #fbbf24);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+
+  animation: shadow-rotate 6s linear infinite;
+}
+
+@keyframes shadow-rotate {
+  0% {
+    text-shadow: 0 0 12px #a855f7, 0 0 20px #a855f7;
+  }
+  33% {
+    text-shadow: 0 0 12px #22d3ee, 0 0 20px #22d3ee;
+  }
+  66% {
+    text-shadow: 0 0 12px #fbbf24, 0 0 20px #fbbf24;
+  }
+  100% {
+    text-shadow: 0 0 12px #a855f7, 0 0 20px #a855f7;
+  }
+}
+
+/* Week selector dropdown */
+.week-container {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 2rem;
+}
+
+.week-select {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  border: 2px solid rgba(168, 85, 247, 0.6);
+  background: #1a1a24;
+  color: #f3f4f6;
+  transition: all 0.2s ease;
+}
+
+.week-select:hover {
+  border-color: #a855f7;
+  box-shadow: 0 0 10px rgba(168, 85, 247, 0.5);
+}
+
+/* Grid centering */
+.game-list {
+  display: grid;
+  gap: 1.51rem;
+  justify-content: center;
+  justify-items: center;
+  padding: 1rem;
+  margin: 0 auto;
+  max-width: 1400px;
+}
+
+/* Desktop: 3 columns */
+@media (min-width: 1024px) {
+  .game-list {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+/* Tablet: 2 columns */
+@media (min-width: 640px) and (max-width: 1023px) {
+  .game-list {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Mobile: 1 column */
+@media (max-width: 639px) {
+  .game-list {
+    grid-template-columns: 1fr;
+  }
+}
+
+.team-logos {
+  display: flex;
+  align-items: flex-start; /* push everything upward */
+  justify-content: center;
+  gap: 2rem; /* keep logos apart horizontally */
+  margin-top: -0.25rem; /* pull block upward slightly */
+  margin-bottom: 0.5rem; /* small gap before bottom stats */
+}
+
+.team-logo {
+  width: 70px;
+  height: 70px;
+  object-fit: contain;
+  margin-bottom: 0.15rem;
+}
+
+.vs-text {
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #ccc;
+}
+.team-column {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.25rem; /* spacing between logo and score */
+}
+
+.score-prediction {
+  font-size: 1rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.score-prediction.win {
+  color: #4ade80; /* green */
+}
+
+.score-prediction.lose {
+  color: #f87171; /* red */
+}
+
+/* --- Force scores to sit directly under each logo --- */
+.team-logos {
+  display: grid; /* nice and steady across sizes */
+  grid-template-columns: 1fr auto 1fr;
+  align-items: start;
+  column-gap: 2rem;
+  margin-top: -0.25rem; /* nudge the whole block up a hair */
+  margin-bottom: 0.6rem; /* small gap before bottom stats */
+}
+
+.team-column {
+  position: relative; /* anchor for the absolute score */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-bottom: 24px; /* reserve vertical space for the score */
+}
+
+.team-logo {
+  width: 72px;
+  height: 72px;
+  object-fit: contain;
+  display: block;
+}
+
+/* The score is pinned to the bottom of the logo column */
+.score-prediction {
+  position: absolute;
+  bottom: 0;
+  margin: 0; /* kill any extra spacing */
+  line-height: 1;
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+
+/* keep your win/lose colors */
+.score-win {
+  color: #22c55e;
+  text-shadow: 0 0 10px rgba(34, 197, 94, 0.45);
+}
+.score-lose {
+  color: #f87171;
+  text-shadow: 0 0 10px rgba(248, 113, 113, 0.35);
+}
+
+/* give the stats row a little breathing room but keep it tight */
+.game-btn__meta {
+  margin-top: 10px;
+}
+.team-logos {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 3rem; /* space between left logo, VS, right logo */
+}
+
+.team-slot {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem; /* small vertical spacing between logo and score */
+}
+
+.projected-score {
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.projected-score.win {
+  color: #16a34a; /* green if winner */
+}
+
+.projected-score.lose {
+  color: #dc2626; /* red if loser */
+}
+
+.score-final {
+  color: white;
+  font-weight: bold;
+  font-size: 1.2rem; /* adjust if needed */
+}
+
+.sep {
+  margin: 0 6px;
+  color: #aaa;
+}
